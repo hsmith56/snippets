@@ -34,14 +34,16 @@ def start_containers(filename = 'Names.txt'):
             elif name in all_containers and name not in running_containers:
                 container_restart = subprocess.run(restart_container.format(name), capture_output=True, text=True)
                 print(f'Container "{name}" was restarted')
-
+    except Exception as e:
+        print(e)
         # if name not in list, stop the running container
+    try:
         for container in running_containers:
             if container not in containers_to_create:
-                container_stop = subprocess.run(stop_container.format(name), capture_output=True)
+                container_stop = subprocess.run(stop_container.format(container), capture_output=True)
                 if container_stop.stderr:
                     raise Exception(container_stop.stderr)
-                print(f'Container {container_stop.stdout} has been stopped')
+                print(f'Container {container} has been stopped')
 
     except Exception as e:
         print(e)
