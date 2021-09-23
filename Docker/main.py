@@ -39,8 +39,8 @@ def start_containers(filename = 'Names.txt'):
         for container in running_containers:
             if container not in containers_to_create:
                 container_stop = subprocess.run(stop_container.format(name), capture_output=True)
-                if container_creation.stderr:
-                    raise Exception(container_creation.stderr)
+                if container_stop.stderr:
+                    raise Exception(container_stop.stderr)
                 print(f'Container {container_stop.stdout} has been stopped')
 
     except Exception as e:
