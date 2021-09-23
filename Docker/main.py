@@ -4,6 +4,7 @@ import time
 def start_containers(filename = 'Names.txt'):
     create_container = 'docker run -dit --name={0} test1 {0}'
     restart_container = 'docker restart {}'
+    stop_container = 'docker stop {}'
 
     containers_to_create = None
     with open(filename, 'r') as file:
@@ -22,15 +23,25 @@ def start_containers(filename = 'Names.txt'):
 
     try:
         for name in containers_to_create:
+            # if the container doesn't exist at all, create
             if name not in all_containers:
                 container_creation = subprocess.run(create_container.format(name), capture_output=True, text=True) 
                 if container_creation.stderr:
                     raise Exception(container_creation.stderr)
                 print(f'Container "{name}" was created with id: {container_creation.stdout}')
 
+            # if the container exists but is stopped, restart
             elif name in all_containers and name not in running_containers:
                 container_restart = subprocess.run(restart_container.format(name), capture_output=True, text=True)
                 print(f'Container "{name}" was restarted')
+
+        # if name not in list, stop the running container
+        for container in running_containers:
+            if container not in containers_to_create:
+                container_stop = subprocess.run(stop_container.format(name), capture_output=True)
+                if container_creation.stderr:
+                    raise Exception(container_creation.stderr)
+                print(f'Container {container_stop.stdout} has been stopped')
 
     except Exception as e:
         print(e)
@@ -42,9 +53,3 @@ while True:
         print(e)
     print('waiting 10 seconds...')
     time.sleep(10)
-
-# stop_container = 'docker stop {}'
-# for container in running_containers:
-#     if container not in containers_to_create:
-#         container_stop = subprocess.run(stop_container.format(name), capture_output=True)
-#         print(f'Container {container_stop.stdout} has been stopped')
