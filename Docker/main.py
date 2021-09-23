@@ -8,7 +8,8 @@ def start_containers(filename = 'Names.txt'):
 
     containers_to_create = None
     with open(filename, 'r') as file:
-        containers_to_create = [line.strip() for line in file]
+        containers_to_create = [line.strip() for line in file if line.strip() != ""]
+
 
     try:
         all_docker_containers = subprocess.run('docker ps -a --format "{{.Names}}"', capture_output=True, text=True, universal_newlines=True)
