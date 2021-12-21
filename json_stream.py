@@ -9,7 +9,7 @@ def create_json(rnge_start, rnge_end, function):
         for i in range(rnge_start, rnge_end):
             f.write('{"id": '+ f'"{i}"' + ', "name": "sid", "dataTypeName": "meta_data", "fieldName": ":sid", "position": 0, "renderTypeName": "meta_data", "format": {}, "flags": ["hidden"]}\n')
 
-create_json(rnge_start=0, rnge_end=1000, function='w+')
+create_json(rnge_start=0, rnge_end=1_000_000, function='w+')
 
 class Connector:
     def __init__(self):
@@ -28,7 +28,8 @@ class Connector:
             # otherwise start from the beginning
             if self.curr_file_size > self.prev_file_size:
                 fileobj.seek(self.prev_file_size)
-
+                print()
+            self.prev_file_size = self.curr_file_size
             buffer = "" 
             for chunk in iter(partial(fileobj.read), ""):
                 buffer += chunk
@@ -47,7 +48,7 @@ class Connector:
                     except ValueError:
                         break
         # set
-        self.prev_file_size = self.curr_file_size
+        # self.prev_file_size = self.curr_file_size
 
 t1 = Connector()
 test = t1.stream_read_json()
@@ -57,19 +58,20 @@ last = ""
 # At this point the JSON is 1000 things, print the very last one
 for i in test:
     last = i
+    break
 print(last)
 
 
-# append 1000:1020 to the json
-create_json(rnge_start=1000, rnge_end=1020, function='a')
+# append 1_000_000:1_000_020 to the json
+create_json(rnge_start=1_000_000, rnge_end=1_000_020, function='a')
 
 # The file has since increased in size so this should only read from the new entires onwards
 test = t1.stream_read_json()
 for i in test:
     print(i)
 
-# Overwrite the whole file starting at 1020 going forward
-create_json(rnge_start=1020, rnge_end=1050, function='w')
+# Overwrite the whole file starting at 1_000_020 going forward
+create_json(rnge_start=1_000_020, rnge_end=1_000_050, function='w')
 
 # Since the file was rewritter, start from 0
 test = t1.stream_read_json()
