@@ -55,7 +55,8 @@ test = t1.stream_read_json()
 last = ""
 
 
-# At this point the JSON is 1000 things, print the very last one
+# At this point the JSON is 1_000_000 things, print the very first one and break
+# to simulate going over all 1 million items
 for i in test:
     last = i
     break
