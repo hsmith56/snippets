@@ -1,7 +1,10 @@
 import json
 from json import JSONDecoder
 from functools import partial
+from json.decoder import JSONDecodeError
 import os
+import logging
+
 
 # helper function to create random malformatted json
 def create_json(rnge_start, rnge_end, function):
@@ -20,7 +23,7 @@ class Connector:
         self.output_file = 'badjson.txt'
 
 
-    def stream_read_json(self, decoder=JSONDecoder()):
+    def stream_read_json(self, decoder=JSONDecoder(), buffer_size = 8192):
         self.curr_file_size = os.stat(self.output_file).st_size # Get the size of the file in bytes
 
         with open(self.output_file, 'r') as fileobj:
@@ -28,15 +31,19 @@ class Connector:
             # otherwise start from the beginning
             if self.curr_file_size > self.prev_file_size:
                 fileobj.seek(self.prev_file_size)
-                print()
-            self.prev_file_size = self.curr_file_size
-            buffer = "" 
-            for chunk in iter(partial(fileobj.read), ""):
+
+            
+            buffer = ""
+
+            for chunk in iter(partial(fileobj.read, buffer_size), ""):
                 buffer += chunk
+                # MUST HAVE THIS LINE OTHERWIES IT WILL ALWAYS GET STUCK AND INFINITELY INCREASE BUFFER
+                buffer = buffer.strip()
+
                 while buffer:
                     try:
                         result, index = decoder.raw_decode(buffer)
-
+                    
                         # this is for my fake JSON, do actual stuff here
                         self.current_offset = abs(int(result['id']))
                         if self.current_offset > self.prev_offset:
@@ -44,22 +51,18 @@ class Connector:
                             yield result
 
                         buffer = buffer[index:].lstrip()
-
-                    except ValueError:
+                    except ValueError as e:
                         break
-        # set
-        # self.prev_file_size = self.curr_file_size
+        self.prev_file_size = self.curr_file_size
 
 t1 = Connector()
 test = t1.stream_read_json()
 last = ""
 
-
-# At this point the JSON is 1_000_000 things, print the very first one and break
-# to simulate going over all 1 million items
-for i in test:
+# Proof that every single item gets iterated over
+# last would not be 999_999 if it failed previously
+for index, i in enumerate(test):
     last = i
-    break
 print(last)
 
 
